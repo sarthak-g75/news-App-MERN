@@ -1,4 +1,3 @@
-// screens/AddNews.js
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCheckAdmin } from '../hooks/useCheckAdmin'
@@ -34,8 +33,7 @@ const AddNews = () => {
       name={'news'}
       formFields={formFields}
       submitUrl={submitUrl}
-      auth={auth}
-      navigate={'/my-news'}
+      navigateUrl={'/my-news'}
     />
   )
 }

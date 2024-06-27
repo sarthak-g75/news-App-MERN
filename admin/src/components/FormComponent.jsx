@@ -1,23 +1,43 @@
-// components/FormComponent.js
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import FileUploader from './FileUploader'
-import { useNavigate } from 'react-router-dom'
 import TextEditor from './TextEditor'
-const FormComponent = ({ formFields, submitUrl, auth, navigate, name }) => {
-  const history = useNavigate()
-  const [formData, setFormData] = useState({
+import { useNavigate } from 'react-router-dom'
+
+const FormComponent = ({
+  formFields,
+  submitUrl,
+  navigateUrl,
+  name,
+  initialValues = {
     title: '',
     genre: '',
     description: '',
     news: '',
     imageUrl: [],
-  })
+  },
+  isUpdateMode = false,
+  submitHandler,
+}) => {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState(initialValues)
+
+  // Use useEffect to initialize form data only once when initialValues change
+  if (isUpdateMode) {
+    useEffect(() => {
+      setFormData(initialValues)
+    }, [initialValues])
+  } else {
+    useEffect(() => {
+      setFormData(initialValues)
+    }, [])
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
+
   const handleDescChange = (content) => {
     if (name === 'news') {
       setFormData((prev) => ({ ...prev, news: content }))
@@ -29,22 +49,25 @@ const FormComponent = ({ formFields, submitUrl, auth, navigate, name }) => {
   const handleFileChange = (urls) => {
     setFormData((prev) => ({
       ...prev,
-      imageUrl: [...formData.imageUrl, ...urls],
+      imageUrl: [...prev.imageUrl, ...urls], // Append new URLs to existing array
     }))
   }
 
   const handleSubmit = async (e) => {
-    // console.log(formData)
     e.preventDefault()
     try {
-      const response = await axios.post(submitUrl, formData, {
-        headers: {
-          token: localStorage.getItem('token'),
-        },
-      })
-      if (response.data.success) {
-        alert('Submitted successfully')
-        history(navigate)
+      if (submitHandler) {
+        await submitHandler(formData)
+      } else {
+        const response = await axios.post(submitUrl, formData, {
+          headers: {
+            token: localStorage.getItem('token'),
+          },
+        })
+        if (response.data.success) {
+          alert('Submitted successfully')
+          navigate(navigateUrl)
+        }
       }
     } catch (error) {
       alert(error.response.data.message)
@@ -93,11 +116,13 @@ const FormComponent = ({ formFields, submitUrl, auth, navigate, name }) => {
                 placeholder={elem.placeholder}
               />
             ) : (
-              <TextEditor change={handleDescChange} />
+              <TextEditor
+                change={handleDescChange}
+                content={formData[elem.name]}
+              />
             )}
           </div>
         ))}
-
         <button
           type='submit'
           className='px-4 py-2 font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600'

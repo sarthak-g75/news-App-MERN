@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 export const useGetUserData = (url, limit, trigger) => {
+  const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
@@ -45,6 +47,9 @@ export const useGetUserData = (url, limit, trigger) => {
     } catch (error) {
       setHasMore(false)
       console.error('Error fetching data:', error.response.data)
+      alert(error.response.data.message)
+      navigate('/add-news')
+      setData(error.response.data.message)
       setIsFetching(false)
     }
   }

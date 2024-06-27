@@ -30,23 +30,9 @@ const AdminNavbar = () => {
       <Link
         className='lg:hover:underline lg:text-base lg:font-medium'
         onClick={handleClickMenu}
-        to={'/add-news'}
-      >
-        Add News
-      </Link>
-      <Link
-        className='lg:hover:underline lg:text-base lg:font-medium'
-        onClick={handleClickMenu}
         to={'/my-news'}
       >
         My News
-      </Link>
-      <Link
-        className='lg:hover:underline lg:text-base lg:font-medium'
-        onClick={handleClickMenu}
-        to={'/add-blog'}
-      >
-        Add Blogs
       </Link>
       <Link
         className='lg:hover:underline lg:text-base lg:font-medium'
@@ -55,6 +41,21 @@ const AdminNavbar = () => {
       >
         My Blogs
       </Link>
+      <Link
+        className='lg:hover:underline lg:text-base lg:font-medium'
+        onClick={handleClickMenu}
+        to={'/add-news'}
+      >
+        Add News
+      </Link>
+      <Link
+        className='lg:hover:underline lg:text-base lg:font-medium'
+        onClick={handleClickMenu}
+        to={'/add-blog'}
+      >
+        Add Blogs
+      </Link>
+
       {!admin ? (
         <Link
           className='flex items-center gap-2 rounded-full lg:text-white lg:px-6 lg:py-2 lg:text-md lg:bg-primary lg:opacity-80 lg:hover:opacity-100 lg:text-base lg:font-medium'

@@ -145,7 +145,7 @@ router.get('/getUserBlogs', authMiddleware, async (req, res) => {
 // Api to update the blog
 router.put('/updateBlog/:id', authMiddleware, async (req, res) => {
   const { id } = req.userDetail
-  const { title, description } = req.body
+  const { title, description, imageUrl, genre } = req.body
   try {
     const validate = schema.safeParse(req.body)
     if (!validate.success) {
@@ -167,14 +167,12 @@ router.put('/updateBlog/:id', authMiddleware, async (req, res) => {
         .json({ success: false, message: 'Not allowed to update' })
     }
 
-    if (blog.title === title && blog.description === description) {
-      return res.json({
-        success: false,
-        message: 'Please enter a new description and title to update',
-      })
-    }
-
-    await Blog.findByIdAndUpdate(req.params.id, { title, description })
+    await Blog.findByIdAndUpdate(req.params.id, {
+      title,
+      description,
+      genre,
+      imageUrl,
+    })
     return res
       .status(200)
       .json({ success: true, message: 'Blog updated successfully' })

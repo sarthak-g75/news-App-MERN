@@ -37,7 +37,6 @@ const AddBlog = () => {
     <FormComponent
       formFields={formFields}
       submitUrl={submitUrl}
-      auth={auth}
       navigate={'/my-blogs'}
     />
   )

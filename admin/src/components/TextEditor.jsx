@@ -1,18 +1,24 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import JoditEditor from 'jodit-react'
 
-const TextEditor = ({ change }) => {
+const TextEditor = ({ content, change }) => {
   const editor = useRef(null)
-  const [content, setContent] = useState('')
+  const [editorContent, setEditorContent] = useState('')
+
+  useEffect(() => {
+    setEditorContent(content)
+  }, [content])
+
+  const handleChange = (newContent) => {
+    setEditorContent(newContent)
+    change(newContent)
+  }
 
   return (
     <JoditEditor
       ref={editor}
-      value={content}
-      onChange={(newContent) => {
-        setContent(newContent)
-        change(newContent)
-      }}
+      value={editorContent}
+      onChange={handleChange}
     />
   )
 }

@@ -13,6 +13,7 @@ const DataTable = ({
   if (loading) {
     return <div>Loading...</div>
   }
+  console.log(data)
 
   return (
     <div className='container w-full p-4 mx-auto'>

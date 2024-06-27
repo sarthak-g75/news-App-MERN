@@ -79,7 +79,7 @@ router.delete('/deleteNews/:id', authMiddleware, async (req, res) => {
 
 router.put('/updateNews/:id', authMiddleware, async (req, res) => {
   try {
-    const { title, news, imageUrl } = req.body
+    const { title, news, imageUrl, genre } = req.body
     const currentNews = await News.findById(req.params.id)
 
     if (!currentNews) {
@@ -98,8 +98,8 @@ router.put('/updateNews/:id', authMiddleware, async (req, res) => {
     const newTitle = title || currentNews.title
     const newNews = news || currentNews.news
 
-    const validate = schema.safeParse({ title: newTitle, data: newNews })
-
+    const validate = schema.safeParse({ title: newTitle, news: newNews })
+    // console.log(newTitle, newNews, validate.success)
     if (!validate.success) {
       return res.status(403).json({
         success: false,
@@ -111,7 +111,8 @@ router.put('/updateNews/:id', authMiddleware, async (req, res) => {
     await News.findByIdAndUpdate(req.params.id, {
       title: newTitle,
       news: newNews,
-      imageUrl: imageUrl || currentNews.imageUrl,
+      imageUrl: imageUrl,
+      genre: genre,
     })
 
     return res
