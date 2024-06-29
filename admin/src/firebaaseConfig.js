@@ -3,14 +3,14 @@ import { initializeApp } from 'firebase/app'
 import { getStorage } from '@firebase/storage'
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBUk9PMPDEyJyim-iq_S45cUHbXr-Fbg34',
-  authDomain: 'news-app-cf0e3.firebaseapp.com',
-  projectId: 'news-app-cf0e3',
-  storageBucket: 'news-app-cf0e3.appspot.com',
-  messagingSenderId: '315904406522',
-  appId: '1:315904406522:web:572650f92af26d11e06a43',
-  measurementId: 'G-JQEPMX4297',
-}
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
