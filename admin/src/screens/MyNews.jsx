@@ -5,9 +5,9 @@ const MyNews = () => {
   const mainUrl = import.meta.env.VITE_URL
   return (
     <MyContent
-      dataUrl={`${mainUrl}/api/auth`}
-      deleteUrl={`${mainUrl}/api/news/deleteNews`}
-      fetchUrl={`${mainUrl}/api/news/getUserNews`}
+      dataUrl={`${mainUrl}/auth`}
+      deleteUrl={`${mainUrl}/news/deleteNews`}
+      fetchUrl={`${mainUrl}/news/getUserNews`}
       name='news'
     />
   )

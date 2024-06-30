@@ -48,10 +48,11 @@ export const useGetUserData = (url, limit, trigger) => {
       }
     } catch (error) {
       setHasMore(false)
-      console.error('Error fetching data:', error.response.data)
-      alert(error.response.data.message)
+      // console.log(error)
+      // console.error('Error fetching data:', error.response.data)
+      alert('Error Whille Fetching Data')
       navigate('/add-news')
-      setData(error.response.data.message)
+      // setData(error.response.data.message)
       setIsFetching(false)
     }
   }

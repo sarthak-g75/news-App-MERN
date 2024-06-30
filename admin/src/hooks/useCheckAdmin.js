@@ -14,6 +14,7 @@ export const useCheckAdmin = (url) => {
         headers: { token: localStorage.getItem('token') },
       })
       const { data } = response
+      console.log(data)
       if (data.success) {
         setLoading(false)
         setRole(data.role)
@@ -21,7 +22,8 @@ export const useCheckAdmin = (url) => {
         setLoading(false)
       }
     } catch (error) {
-      alert(error.response.data.message)
+      // console.log(error)
+      // alert(error.response.data.message)
     }
   }
   useEffect(() => {
