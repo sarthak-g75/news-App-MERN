@@ -2,11 +2,12 @@ import React from 'react'
 import MyContent from '../components/MyContent'
 
 const MyNews = () => {
+  const mainUrl = import.meta.VITE_URL
   return (
     <MyContent
-      dataUrl='http://localhost:5000/api/auth'
-      deleteUrl='http://localhost:5000/api/news/deleteNews'
-      fetchUrl='http://localhost:5000/api/news/getUserNews'
+      dataUrl={`${mainUrl}/api/auth`}
+      deleteUrl={`${mainUrl}/api/news/deleteNews`}
+      fetchUrl={`${mainUrl}/api/news/getUserNews`}
       name='news'
     />
   )

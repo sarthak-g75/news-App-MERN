@@ -5,7 +5,9 @@ import { Route, Routes } from 'react-router-dom'
 import AddNews from './AddNews'
 import { useRecoilState } from 'recoil'
 import { adminAuth } from '../recoil/atoms/authAtom'
-const url = 'http://localhost:5000/api/auth'
+const mainUrl = import.meta.VITE_URL
+
+const url = `${mainUrl}/auth`
 const AdminDashboard = () => {
   const { role, loading } = useCheckAdmin(url)
   // console.log(role)

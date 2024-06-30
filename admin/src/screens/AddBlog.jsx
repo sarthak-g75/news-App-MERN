@@ -5,9 +5,10 @@ import { useCheckAdmin } from '../hooks/useCheckAdmin'
 import { useRecoilValue } from 'recoil'
 import { adminAuth } from '../recoil/atoms/authAtom'
 import FormComponent from '../components/FormComponent'
+const mainUrl = import.meta.VITE_URL
 
-const url = 'http://localhost:5000/api/auth'
-const submitUrl = 'http://localhost:5000/api/blog/createBlog'
+const url = `${mainUrl}/auth`
+const submitUrl = `${mainUrl}/blog/createBlog`
 
 const AddBlog = () => {
   const auth = useRecoilValue(adminAuth)

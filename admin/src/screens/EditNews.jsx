@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import FormComponent from '../components/FormComponent'
 import { useParams, useNavigate } from 'react-router-dom'
-
-const fetchUrl = 'http://localhost:5000/api/news/getNews'
-const updateUrl = 'http://localhost:5000/api/news/updateNews'
+const mainUrl = import.meta.VITE_URL
+const fetchUrl = `${mainUrl}/news/getNews`
+const updateUrl = `${mainUrl}/news/updateNews`
 
 const EditNews = () => {
   const { id } = useParams()

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 export const useGetUserData = (url, limit, trigger) => {
+  const mainUrl = import.meta.VITE_URL
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -16,11 +17,12 @@ export const useGetUserData = (url, limit, trigger) => {
       const res = await axios.get(`${url}?limit=${limit}&page=${pageNumber}`, {
         headers: { token: localStorage.getItem('token') },
       })
+
       if (res.data.success) {
         const dataWithUser = []
         for (const item of res.data.data) {
           const userDataPromise = axios.get(
-            `http://localhost:5000/api/auth/getUser/${item.user}`
+            `${mainUrl}/auth/getUser/${item.user}`
           )
           dataWithUser.push({ data: item, userPromise: userDataPromise })
         }

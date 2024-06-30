@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import FormComponent from '../components/FormComponent'
 import { useParams, useNavigate } from 'react-router-dom'
+const mainUrl = import.meta.VITE_URL
 
-const fetchUrl = 'http://localhost:5000/api/blog/getBlog' // Adjust API endpoint as per your backend
-const updateUrl = 'http://localhost:5000/api/blog/updateBlog' // Adjust API endpoint as per your backend
+const fetchUrl = `${mainUrl}/blog/getBlog` // Adjust API endpoint as per your backend
+const updateUrl = `${mainUrl}/blog/updateBlog` // Adjust API endpoint as per your backend
 
 const EditBlog = () => {
   const { id } = useParams()
