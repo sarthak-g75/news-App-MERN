@@ -10,6 +10,6 @@ app.use('/api/auth', require('./routes/auth'))
 app.use('/api/blog', require('./routes/blog'))
 app.use('/api/news', require('./routes/news'))
 
-app.listen(5000, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log(`app listening to http://localhost:5000`)
 })
