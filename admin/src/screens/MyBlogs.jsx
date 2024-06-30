@@ -2,7 +2,7 @@ import React from 'react'
 import MyContent from '../components/MyContent'
 
 const MyBlogs = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
   return (
     <MyContent
       dataUrl={`${mainUrl}/auth`}

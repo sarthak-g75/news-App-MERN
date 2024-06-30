@@ -4,7 +4,7 @@ import FormComponent from '../components/FormComponent'
 import { useParams, useNavigate } from 'react-router-dom'
 
 const EditNews = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
   const fetchUrl = `${mainUrl}/news/getNews`
   const updateUrl = `${mainUrl}/news/updateNews`
 

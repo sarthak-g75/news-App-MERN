@@ -7,7 +7,7 @@ import { adminAuth } from '../recoil/atoms/authAtom'
 import FormComponent from '../components/FormComponent'
 
 const AddBlog = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
 
   const url = `${mainUrl}/auth`
   const submitUrl = `${mainUrl}/blog/createBlog`

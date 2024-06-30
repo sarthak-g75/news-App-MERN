@@ -4,7 +4,7 @@ import FormComponent from '../components/FormComponent'
 import { useParams, useNavigate } from 'react-router-dom'
 
 const EditBlog = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
 
   const fetchUrl = `${mainUrl}/blog/getBlog` // Adjust API endpoint as per your backend
   const updateUrl = `${mainUrl}/blog/updateBlog` // Adjust API endpoint as per your backend

@@ -5,7 +5,7 @@ import axios from 'axios'
 import { useRecoilState } from 'recoil'
 import { authAtom } from '../recoil/atoms/authAtom'
 // import { authState } from '../state/atoms/AuthState'
-const mainUrl = import.meta.VITE_URL
+const mainUrl = import.meta.env.VITE_URL
 const url = `${mainUrl}/auth`
 
 const formInputs = [

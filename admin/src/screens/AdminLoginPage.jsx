@@ -20,7 +20,7 @@ const formInputs = [
 ]
 
 const AdminLoginPage = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
 
   const url = `${mainUrl}/auth`
   const [auth, setAuth] = useRecoilState(adminAuth)

@@ -4,7 +4,7 @@ import GenreBar from '../components/GenreBar'
 import Hero from '../components/Hero'
 
 const BlogPage = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
   return (
     <section className='flex flex-col justify-between gap-12 px-6 pt-5 lg:pt-10 lg:px-20 '>
       {/* Genre Buttons */}

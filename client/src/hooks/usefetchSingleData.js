@@ -4,7 +4,7 @@ import { useState } from 'react'
 export const useFetchSingle = (url) => {
   const [data, setData] = useState({})
   const [loading, setLoading] = useState(true)
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
   const fetchApi = async () => {
     try {
       const res = await axios.get(`${url}`)

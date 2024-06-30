@@ -6,7 +6,7 @@ export const useFetchAll = (url, searchQuery = '') => {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
   const [hasMore, setHasMore] = useState(true)
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
   const fetchApi = async (pageNumber, query) => {
     try {
       const res = await axios.get(`${url}page=${pageNumber}&query=${query}`)

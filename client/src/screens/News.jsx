@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useFetchSingle } from '../hooks/usefetchSingleData'
 
 const News = () => {
-  const mainUrl = import.meta.VITE_URL
+  const mainUrl = import.meta.env.VITE_URL
   const date = new Date()
   const dateValue =
     (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) +

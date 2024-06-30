@@ -4,8 +4,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useRecoilState } from 'recoil'
 import { authAtom } from '../recoil/atoms/authAtom'
-const mainUrl = import.meta.VITE_URL
-const url = `${mainUrl}/auth`
+
 // import { authState } from '../state/atoms/AuthState'
 const formInputs = [
   {
@@ -23,6 +22,9 @@ const formInputs = [
 ]
 
 const LoginPage = () => {
+  const mainUrl = import.meta.env.VITE_URL
+  const url = `${mainUrl}/auth`
+  console.log('hello')
   const [auth, setAuth] = useRecoilState(authAtom)
   // console.log(auth)
   const history = useNavigate()
