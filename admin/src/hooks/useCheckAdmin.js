@@ -14,7 +14,7 @@ export const useCheckAdmin = (url) => {
         headers: { token: localStorage.getItem('token') },
       })
       const { data } = response
-      console.log(data)
+      // console.log(data)
       if (data.success) {
         setLoading(false)
         setRole(data.role)
