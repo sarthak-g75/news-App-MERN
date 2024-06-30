@@ -6,7 +6,7 @@ export const useFetchAll = (url, searchQuery = '') => {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
   const [hasMore, setHasMore] = useState(true)
-
+  const mainUrl = import.meta.VITE_URL
   const fetchApi = async (pageNumber, query) => {
     try {
       const res = await axios.get(`${url}page=${pageNumber}&query=${query}`)
@@ -14,7 +14,7 @@ export const useFetchAll = (url, searchQuery = '') => {
         const dataWithUser = []
         for (const item of res.data.data) {
           const userDataPromise = axios.get(
-            `http://localhost:5000/api/auth/getUser/${item.user}`
+            `${mainUrl}/auth/getUser/${item.user}`
           )
           dataWithUser.push({ data: item, userPromise: userDataPromise })
         }

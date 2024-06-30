@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useRecoilState } from 'recoil'
 import { authAtom } from '../recoil/atoms/authAtom'
-const url = 'http://localhost:5000/api/auth'
+const mainUrl = import.meta.VITE_URL
+const url = `${mainUrl}/auth`
 // import { authState } from '../state/atoms/AuthState'
 const formInputs = [
   {

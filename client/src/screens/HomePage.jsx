@@ -2,6 +2,7 @@ import GenreBar from '../components/GenreBar'
 import Heading from '../components/Heading'
 import Hero from '../components/Hero'
 const NewsPage = () => {
+  const mainUrl = import.meta.VITE_URL
   return (
     <section className='flex flex-col justify-between gap-4 px-6 pt-5 lg:pt-10 lg:px-20 '>
       {/* Genre Buttons */}
@@ -11,7 +12,7 @@ const NewsPage = () => {
       {/* Hero section */}
       <Hero
         type='news'
-        url={'http://localhost:5000/api/news/getNews?limit=5&'}
+        url={`${mainUrl}/news/getNews?limit=5&`}
       />
     </section>
   )

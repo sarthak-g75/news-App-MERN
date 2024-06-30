@@ -1,6 +1,4 @@
-import { atom, selector } from 'recoil'
-import axios from 'axios'
-const url = 'http://localhost:5000/api/auth'
+import { atom } from 'recoil'
 
 export const authAtom = atom({
   key: 'auth',

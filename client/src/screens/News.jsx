@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useFetchSingle } from '../hooks/usefetchSingleData'
 
 const News = () => {
+  const mainUrl = import.meta.VITE_URL
   const date = new Date()
   const dateValue =
     (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) +
@@ -14,9 +15,7 @@ const News = () => {
     date.getFullYear()
   // console.log(date.getMonth())
   const { id } = useParams()
-  const { loading, data } = useFetchSingle(
-    `http://localhost:5000/api/news/getNews/${id}`
-  )
+  const { loading, data } = useFetchSingle(`${mainUrl}/news/getNews/${id}`)
   console.log(loading, data)
 
   if (loading) {

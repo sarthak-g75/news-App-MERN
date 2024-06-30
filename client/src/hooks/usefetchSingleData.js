@@ -4,13 +4,14 @@ import { useState } from 'react'
 export const useFetchSingle = (url) => {
   const [data, setData] = useState({})
   const [loading, setLoading] = useState(true)
+  const mainUrl = import.meta.VITE_URL
   const fetchApi = async () => {
     try {
       const res = await axios.get(`${url}`)
       if (res.data.success) {
         // console.log(res.data.data)
         const userData = await axios.get(
-          `http://localhost:5000/api/auth/getUser/${res.data.data.user}`
+          `${mainUrl}/auth/getUser/${res.data.data.user}`
         )
         setData({ data: res.data.data, user: userData.data.user })
         setLoading(false)

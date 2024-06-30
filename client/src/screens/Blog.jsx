@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useFetchSingle } from '../hooks/usefetchSingleData'
 
 const Blog = () => {
+  const mainUrl = import.meta.VITE_URL
   const date = new Date()
   const dateValue =
     (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) +
@@ -16,9 +17,7 @@ const Blog = () => {
     date.getFullYear()
   // console.log(date.getMonth() + 1)
   const { id } = useParams()
-  const { loading, data } = useFetchSingle(
-    `http://localhost:5000/api/blog/getBlog/${id}`
-  )
+  const { loading, data } = useFetchSingle(`${mainUrl}/blog/getBlog/${id}`)
   console.log(loading, data)
 
   if (loading) {
