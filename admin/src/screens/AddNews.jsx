@@ -4,12 +4,12 @@ import { useCheckAdmin } from '../hooks/useCheckAdmin'
 import { useRecoilValue } from 'recoil'
 import { adminAuth } from '../recoil/atoms/authAtom'
 import FormComponent from '../components/FormComponent'
-const mainUrl = import.meta.VITE_URL
-
-const url = `${mainUrl}/auth`
-const submitUrl = `${mainUrl}/news/createNews`
 
 const AddNews = () => {
+  const mainUrl = import.meta.VITE_URL
+
+  const url = `${mainUrl}/auth`
+  const submitUrl = `${mainUrl}/news/createNews`
   const auth = useRecoilValue(adminAuth)
   const navigate = useNavigate()
   const { role, loading } = useCheckAdmin(url)

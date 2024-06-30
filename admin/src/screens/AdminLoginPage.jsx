@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { adminAuth } from '../recoil/atoms/authAtom'
 import { useRecoilState } from 'recoil'
-const mainUrl = import.meta.VITE_URL
-
-const url = `${mainUrl}/auth`
 import axios from 'axios'
 
 const formInputs = [
@@ -23,6 +20,9 @@ const formInputs = [
 ]
 
 const AdminLoginPage = () => {
+  const mainUrl = import.meta.VITE_URL
+
+  const url = `${mainUrl}/auth`
   const [auth, setAuth] = useRecoilState(adminAuth)
 
   const history = useNavigate()
