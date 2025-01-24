@@ -9,7 +9,7 @@ connectMongo()
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/blog', require('./routes/blog'))
 app.use('/api/news', require('./routes/news'))
-
+// console.log(process.env.MONGO_URI)
 app.listen(process.env.PORT || 5000, () => {
   console.log(`app listening to http://localhost:5000`)
 })
