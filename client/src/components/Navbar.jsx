@@ -77,7 +77,7 @@ const Navbar = () => {
         to={'/'}
         className='text-3xl font-bold text-other'
       >
-        News App
+        News Appss
       </Link>
       {/* Hamburger */}
       <div className='relative z-30 lg:hidden '>
