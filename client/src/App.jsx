@@ -8,6 +8,7 @@ import SignUpPage from './screens/SignUpPage'
 
 import Blog from './screens/Blog'
 import News from './screens/News'
+import NotFoundPage from './screens/NotFoundPage'
 
 function App() {
   // console.log(admin)
@@ -41,6 +42,10 @@ function App() {
         <Route
           path='/blog/:id'
           element={<Blog />}
+        />
+        <Route
+          path='*'
+          element={<NotFoundPage />}
         />
       </Routes>
     </>
