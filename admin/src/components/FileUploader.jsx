@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { v4 } from 'uuid'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { imageDB } from '../firebaaseConfig'
+import { v4 as uuidv4 } from 'uuid'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+
+const s3Client = new S3Client({
+  region: 'ap-south-1',
+  credentials: {
+    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY,
+    secretAccessKey: import.meta.env.VITE_AWS_SECRET_KEY,
+  },
+})
 
 function FileUploader({ onFileChange, reset }) {
   const [files, setFiles] = useState([])
@@ -37,29 +44,12 @@ function FileUploader({ onFileChange, reset }) {
     setPreviewUrls(newPreviewUrls)
   }
 
-  const compressImage = (file, quality) => {
+  const getFileBuffer = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = (event) => {
-        const img = new Image()
-        img.src = event.target.result
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          canvas.width = img.width
-          canvas.height = img.height
-          ctx.drawImage(img, 0, 0, img.width, img.height)
-          canvas.toBlob(
-            (blob) => {
-              resolve(blob)
-            },
-            'image/jpeg',
-            quality
-          )
-        }
-        img.onerror = (error) => reject(error)
-      }
+      reader.readAsArrayBuffer(file)
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = (error) => reject(error)
     })
   }
 
@@ -67,26 +57,30 @@ function FileUploader({ onFileChange, reset }) {
     try {
       setSubmitting(true)
       const urls = []
-      for (const file of files) {
-        let uploadFile = file
 
-        if (file.type.startsWith('image/')) {
-          uploadFile = await compressImage(file, 0.7)
+      for (const file of files) {
+        const buffer = await getFileBuffer(file)
+        const fileKey = `uploads/${uuidv4()}-${file.name}`
+
+        const uploadParams = {
+          Bucket: import.meta.env.VITE_AWS_BUCKET_NAME,
+          Key: fileKey,
+          Body: buffer,
+          ContentType: file.type,
         }
 
-        const fileRef = ref(imageDB, `files/${v4()}`)
-        await uploadBytes(fileRef, uploadFile)
-        const url = await getDownloadURL(fileRef)
-        urls.push(url)
+        await s3Client.send(new PutObjectCommand(uploadParams))
+
+        const fileUrl = `${import.meta.env.VITE_S3_URL}/${fileKey}`
+        urls.push(fileUrl)
       }
+
       onFileChange(urls)
       setSubmitting(false)
       setSubmitted(true)
-      setFiles([]) // Reset files after successful submission
-      setPreviewUrls([]) // Reset preview URLs after successful submission
-      setTimeout(() => {
-        setSubmitted(false) // Allow new submissions after a short delay
-      }, 1000)
+      setFiles([])
+      setPreviewUrls([])
+      setTimeout(() => setSubmitted(false), 1000)
     } catch (error) {
       console.error('Error uploading file:', error)
     }
@@ -133,7 +127,6 @@ function FileUploader({ onFileChange, reset }) {
                   src={url}
                   className='object-cover w-full h-full'
                   controls
-                  alt={`Preview Video ${index}`}
                 />
               )}
               <button
