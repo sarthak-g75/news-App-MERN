@@ -14,7 +14,7 @@ export const useFetchAll = (url, searchQuery = '') => {
         const dataWithUser = []
         for (const item of res.data.data) {
           const userDataPromise = axios.get(
-            `${mainUrl}/auth/getUser/${item.user}`
+            `${mainUrl}/auth/get-user/${item.user}`
           )
           dataWithUser.push({ data: item, userPromise: userDataPromise })
         }

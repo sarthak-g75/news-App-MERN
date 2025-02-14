@@ -6,8 +6,8 @@ const MyBlogs = () => {
   return (
     <MyContent
       dataUrl={`${mainUrl}/auth`}
-      deleteUrl={`${mainUrl}/blog/deleteBlog`}
-      fetchUrl={`${mainUrl}/blog/getUserBlogs`}
+      deleteUrl={`${mainUrl}/blog/delete-blog`}
+      fetchUrl={`${mainUrl}/blog/get-user-blogs`}
       name='blog'
     />
   )

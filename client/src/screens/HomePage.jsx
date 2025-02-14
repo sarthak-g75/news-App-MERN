@@ -12,7 +12,7 @@ const NewsPage = () => {
       {/* Hero section */}
       <Hero
         type='news'
-        url={`${mainUrl}/news/getNews?limit=5&`}
+        url={`${mainUrl}/news/get-news?limit=5&`}
       />
     </section>
   )

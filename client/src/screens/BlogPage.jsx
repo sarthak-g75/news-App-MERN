@@ -11,7 +11,7 @@ const BlogPage = () => {
       {/* <GenreBar /> */}
       {/* Hero of Blog page */}
       <Hero
-        url={`${mainUrl}/blog/getAllBlogs?limit=5&`}
+        url={`${mainUrl}/blog/get-all-blogs?limit=5&`}
         type='blog'
       />
     </section>

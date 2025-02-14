@@ -6,8 +6,8 @@ const MyNews = () => {
   return (
     <MyContent
       dataUrl={`${mainUrl}/auth`}
-      deleteUrl={`${mainUrl}/news/deleteNews`}
-      fetchUrl={`${mainUrl}/news/getUserNews`}
+      deleteUrl={`${mainUrl}/news/delete-news`}
+      fetchUrl={`${mainUrl}/news/get-user-news`}
       name='news'
     />
   )

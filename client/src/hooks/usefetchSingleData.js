@@ -11,7 +11,7 @@ export const useFetchSingle = (url) => {
       if (res.data.success) {
         // console.log(res.data.data)
         const userData = await axios.get(
-          `${mainUrl}/auth/getUser/${res.data.data.user}`
+          `${mainUrl}/auth/get-user/${res.data.data.user}`
         )
         setData({ data: res.data.data, user: userData.data.user })
         setLoading(false)

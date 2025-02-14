@@ -21,8 +21,9 @@ export const useGetUserData = (url, limit, trigger) => {
       if (res.data.success) {
         const dataWithUser = []
         for (const item of res.data.data) {
+          // console.log(item)
           const userDataPromise = axios.get(
-            `${mainUrl}/auth/getUser/${item.user}`
+            `${mainUrl}/auth/get-user/${item.userId}`
           )
           dataWithUser.push({ data: item, userPromise: userDataPromise })
         }

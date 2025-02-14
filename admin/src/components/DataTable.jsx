@@ -1,5 +1,3 @@
-import React from 'react'
-
 const DataTable = ({
   data,
   loading,
@@ -13,7 +11,7 @@ const DataTable = ({
   if (loading) {
     return <div>Loading...</div>
   }
-  console.log(data)
+  // console.log(data)
 
   return (
     <div className='container w-full p-4 mx-auto'>
@@ -31,13 +29,13 @@ const DataTable = ({
           <tbody>
             {data.map((item) => (
               <tr key={item.data._id}>
-                <td className='px-4 py-2 border-b'>
+                {/* <td className='px-4 py-2 border-b'>
                   <img
                     src={item.data.imageUrl[0]}
                     alt='News'
                     className='object-cover w-20 h-20'
                   />
-                </td>
+                </td> */}
                 <td className='px-4 py-2 border-b'>
                   {item.data.title.length > 50
                     ? `${item.data.title.slice(0, 50)} ...`
@@ -47,14 +45,14 @@ const DataTable = ({
                 <td className='px-4 py-2 border-b'>
                   <button
                     className='px-2 py-1 mr-2 text-white bg-green-500 rounded'
-                    onClick={() => handleEdit(item.data._id)}
+                    onClick={() => handleEdit(item.data.id)}
                   >
                     Edit
                   </button>
                   <button
                     className='px-2 py-1 text-white bg-red-500 rounded'
                     onClick={() =>
-                      handleDelete(item.data._id, item.data.imageUrl)
+                      handleDelete(item.data.id, item.data.imageUrl)
                     }
                   >
                     Delete

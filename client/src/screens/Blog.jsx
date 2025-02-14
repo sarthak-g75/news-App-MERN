@@ -17,7 +17,7 @@ const Blog = () => {
     date.getFullYear()
   // console.log(date.getMonth() + 1)
   const { id } = useParams()
-  const { loading, data } = useFetchSingle(`${mainUrl}/blog/getBlog/${id}`)
+  const { loading, data } = useFetchSingle(`${mainUrl}/blog/get-blog/${id}`)
   console.log(loading, data)
 
   if (loading) {

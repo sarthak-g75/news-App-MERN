@@ -15,7 +15,7 @@ const News = () => {
     date.getFullYear()
   // console.log(date.getMonth())
   const { id } = useParams()
-  const { loading, data } = useFetchSingle(`${mainUrl}/news/getNews/${id}`)
+  const { loading, data } = useFetchSingle(`${mainUrl}/news/get-news/${id}`)
   console.log(loading, data)
 
   if (loading) {
