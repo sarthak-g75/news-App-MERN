@@ -1,18 +1,26 @@
 const express = require('express')
 const router = express.Router()
 const authMiddleware = require('../middlewares/auth')
-const News = require('../models/News')
+
 const zod = require('zod')
+const prisma = require('../prismaClient')
 
 require('dotenv').config()
-
 const schema = zod.object({
   title: zod.string().min(5),
-  news: zod.string().min(10),
+  content: zod
+    .array(
+      zod.object({
+        type: zod.string().min(3),
+        content: zod.array(zod.string().min(1)),
+      })
+    )
+    .min(1),
+  genre: zod.string().min(3),
 })
 
 // Api to create News - login required;
-router.post('/createNews', authMiddleware, async (req, res) => {
+router.post('/create-news', authMiddleware, async (req, res) => {
   try {
     if (req.userDetail.role !== 'admin') {
       return res
@@ -20,23 +28,24 @@ router.post('/createNews', authMiddleware, async (req, res) => {
         .json({ success: false, message: 'Not allowed to add news' })
     }
 
-    const { title, news, imageUrl, genre } = req.body
-    const validate = schema.safeParse({ title, news })
+    const { content, genre, title } = req.body
+    const validate = schema.safeParse(req.body)
 
     if (!validate.success) {
       return res.status(403).json({
         success: false,
         message:
-          'Input validation failed, title should contain at least 5 characters and description should contain at least 10 characters',
+          'Input validation failed, genre should contain at least 3 characters and content should have atleast one element',
       })
     }
 
-    await News.create({
-      title,
-      news,
-      user: req.userDetail.id,
-      imageUrl,
-      genre,
+    await prisma.news.create({
+      data: {
+        title,
+        content,
+        userId: req.userDetail.id,
+        genre,
+      },
     })
 
     return res
@@ -48,27 +57,22 @@ router.post('/createNews', authMiddleware, async (req, res) => {
 })
 
 // Api to delete News - login required:
-router.delete('/deleteNews/:id', authMiddleware, async (req, res) => {
+router.delete('/delete-news/:id', authMiddleware, async (req, res) => {
   try {
     if (req.userDetail.role !== 'admin') {
       return res
         .status(403)
         .json({ success: false, message: 'Not allowed to delete the news' })
     }
-
-    const news = await News.findById(req.params.id)
-    if (!news) {
-      return res.status(404).json({ success: false, message: 'News not found' })
+    const deletedNews = await prisma.news.deleteMany({
+      where: { userId: req.userDetail.id, id: req.params.id },
+    })
+    if (deletedNews.count === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'News not found or you are not the owner',
+      })
     }
-
-    if (news.user.toString() !== req.userDetail.id) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'You are not the owner of this news' })
-    }
-
-    await News.findByIdAndDelete(req.params.id)
-
     return res
       .status(200)
       .json({ success: true, message: 'News deleted successfully' })
@@ -77,56 +81,50 @@ router.delete('/deleteNews/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.put('/updateNews/:id', authMiddleware, async (req, res) => {
+router.patch('/update-news/:id', authMiddleware, async (req, res) => {
   try {
-    const { title, news, imageUrl, genre } = req.body
-    const currentNews = await News.findById(req.params.id)
+    const { content, genre, title } = req.body
+
+    const currentNews = await prisma.news.findUnique({
+      where: { id: req.params.id },
+    })
 
     if (!currentNews) {
       return res.status(404).json({ success: false, message: 'News not found' })
     }
 
     const isAdmin = req.userDetail.role === 'admin'
-    const isOwner = currentNews.user.toString() === req.userDetail.id
+    const isOwner = currentNews.userId === req.userDetail.id
 
-    if (!(isAdmin && isOwner)) {
+    if (!isAdmin && !isOwner) {
       return res
         .status(403)
         .json({ success: false, message: 'Not allowed to update' })
     }
 
-    const newTitle = title || currentNews.title
-    const newNews = news || currentNews.news
-
-    const validate = schema.safeParse({ title: newTitle, news: newNews })
-    // console.log(newTitle, newNews, validate.success)
-    if (!validate.success) {
-      return res.status(403).json({
-        success: false,
-        message:
-          'Input validation failed, title should contain at least 5 characters and description should contain at least 10 characters',
-      })
-    }
-
-    await News.findByIdAndUpdate(req.params.id, {
-      title: newTitle,
-      news: newNews,
-      imageUrl: imageUrl,
-      genre: genre,
+    const updatedNews = await prisma.news.update({
+      where: { id: req.params.id },
+      data: {
+        title: title ?? currentNews.title, // Keep existing title if not provided
+        content: content ?? currentNews.content, // Keep existing content if not provided
+        genre: genre ?? currentNews.genre, // Keep existing genre if not provided
+      },
     })
 
-    return res
-      .status(200)
-      .json({ success: true, message: 'News updated successfully' })
+    return res.status(200).json({
+      success: true,
+      message: 'News updated successfully',
+      news: updatedNews,
+    })
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message })
   }
 })
 
 // Api to get a news by id
-router.get('/getNews/:id', async (req, res) => {
+router.get('/get-news/:id', async (req, res) => {
   try {
-    const news = await News.findById(req.params.id)
+    const news = await prisma.news.findUnique({ where: { id: req.params.id } })
     if (!news) {
       return res.status(404).json({ success: false, message: 'News not found' })
     }
@@ -137,77 +135,79 @@ router.get('/getNews/:id', async (req, res) => {
 })
 
 // Api to get all news of a user by thier id :
-router.get('/getUserNews', authMiddleware, async (req, res) => {
-  let success = false
+router.get('/get-user-news', authMiddleware, async (req, res) => {
   try {
-    const { page, limit } = req.query
+    let { page = 1, limit = 10 } = req.query
 
-    const newsCount = await News.countDocuments({ user: req.userDetail.id })
-    const news = await News.find({ user: req.userDetail.id })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
+    page = parseInt(page)
+    limit = parseInt(limit)
 
-    if (news.length > 0) {
-      success = true
-      return res.status(200).json({
-        success: success,
-        data: news,
-        total: newsCount,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(newsCount / limit),
-      })
-    } else {
+    const newsCount = await prisma.news.count({
+      where: { userId: req.userDetail.id },
+    })
+
+    const news = await prisma.news.findMany({
+      where: { userId: req.userDetail.id },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { date: 'desc' }, // Sorting by latest news
+    })
+
+    if (!news.length) {
       return res
         .status(404)
-        .json({ success: success, message: 'news not found for this user' })
+        .json({ success: false, message: 'No news found for this user' })
     }
+
+    return res.status(200).json({
+      success: true,
+      data: news,
+      total: newsCount,
+      currentPage: page,
+      totalPages: Math.ceil(newsCount / limit),
+    })
   } catch (error) {
-    return res.status(500).json({ success: success, message: error.message })
+    return res.status(500).json({ success: false, message: error.message })
   }
 })
-
 // Api To get all news;
-router.get('/getNews', async (req, res) => {
-  let success = false
+router.get('/get-news', async (req, res) => {
   try {
-    // Pagination parameters
     const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 10 // Default limit to 10 if not specified
-    const genre = req.query.genre
-    const searchQuery = req.query.query || '' // Get the search query
+    const limit = parseInt(req.query.limit) || 10
+    const genre = req.query.genre || ''
+    const searchQuery = req.query.query || null
 
-    // Calculate the index to start retrieving results from
-    const startIndex = (page - 1) * limit
-
-    // Construct the search criteria
-    let searchCriteria = {}
-    if (genre) {
-      searchCriteria.genre = genre
+    const where = {
+      ...(genre && { genre }),
+      ...(searchQuery && {
+        title: { contains: searchQuery, mode: 'insensitive' },
+      }),
     }
-    if (searchQuery) {
-      searchCriteria.title = { $regex: searchQuery, $options: 'i' } // case-insensitive search by title
+    const newsCount = await prisma.news.count({
+      where,
+    })
+
+    const news = await prisma.news.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { date: 'desc' }, // Sorting by newest first
+    })
+
+    if (!news.length) {
+      return res.status(404).json({ success: false, message: 'No news found' })
     }
 
-    // Find news with the specified criteria, skip, and limit
-    const newsCount = await News.countDocuments(searchCriteria)
-    const news = await News.find(searchCriteria).skip(startIndex).limit(limit)
-
-    if (news.length > 0) {
-      success = true
-      return res.status(200).json({
-        success: success,
-        data: news,
-        total: newsCount,
-        currentPage: page,
-        totalPages: Math.ceil(newsCount / limit),
-      })
-    } else {
-      return res
-        .status(404)
-        .json({ success: success, message: 'News not found' })
-    }
+    return res.status(200).json({
+      success: true,
+      data: news,
+      total: newsCount,
+      currentPage: page,
+      totalPages: Math.ceil(newsCount / limit),
+    })
   } catch (error) {
-    return res.status(500).json({ success: success, message: error.message })
+    return res.status(500).json({ success: false, message: error.message })
   }
 })
 

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.744.0",
     "axios": "^1.7.2",
     "firebase": "^10.12.2",
     "framer-motion": "^11.2.10",

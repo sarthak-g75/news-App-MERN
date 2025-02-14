@@ -1,7 +1,7 @@
 const SEC_KEY = process.env.SEC_KEY
 const jwt = require('jsonwebtoken')
-const User = require('../models/User')
 
+const prisma = require('../prismaClient')
 const fetchUser = async (req, res, next) => {
   const token = req.header('token')
 
@@ -10,9 +10,10 @@ const fetchUser = async (req, res, next) => {
       res.status(401).send('Please authenticate with the valid authentication')
     } else {
       const authToken = token.split(' ')[1]
+      // console.log(authToken)
       const data = jwt.verify(authToken, SEC_KEY)
       // console.log(data)
-      const user = await User.findById(data.id)
+      const user = await prisma.user.findUnique({ where: { id: data.id } })
       if (user) {
         req.userDetail = data
         //   console.log(req.userDetail)

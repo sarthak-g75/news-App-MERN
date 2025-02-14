@@ -1,31 +1,55 @@
 const express = require('express')
 const router = express.Router()
-const Blog = require('../models/Blog')
+const prisma = require('../prismaClient')
 const authMiddleware = require('../middlewares/auth')
 const zod = require('zod')
 
 const schema = zod.object({
   title: zod.string().min(5),
-  description: zod.string().min(10),
+  content: zod
+    .array(
+      zod.object({
+        type: zod.string().min(3),
+        content: zod.array(zod.string().min(1)),
+      })
+    )
+    .min(1),
+  genre: zod.string().min(3),
 })
 
 //  API to get all blogs
-router.get('/getAllBlogs', async (req, res) => {
+router.get('/get-all-blogs', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 10
-    const genre = req.query.genre
-    const startIndex = (page - 1) * limit
-    let blogs
-    if (genre) {
-      blogs = await Blog.find({ genre: genre }).skip(startIndex).limit(limit)
-    } else {
-      blogs = await Blog.find({}).skip(startIndex).limit(limit)
+    const genre = req.query.genre || ''
+    const searchQuery = req.query.query || null
+
+    const where = {
+      ...(genre && { genre }),
+      ...(searchQuery && {
+        title: { contains: searchQuery, mode: 'insensitive' },
+      }),
     }
-    if (blogs.length < 1) {
+    const blogsCount = await prisma.blog.count({ where })
+    const blogs = await prisma.blog.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { date: 'desc' }, // Sorting by newest first
+      include: { user: true }, // Optional: Fetch user details with the blog
+    })
+    if (!blogs.length) {
       return res.status(404).json({ success: false, message: 'No blogs found' })
     }
-    return res.status(200).json({ success: true, data: blogs })
+
+    return res.status(200).json({
+      success: true,
+      data: blogs,
+      total: blogsCount,
+      currentPage: page,
+      totalPages: Math.ceil(blogsCount / limit),
+    })
     // next()
   } catch (error) {
     return res.status(500).json({ message: error.message })
@@ -33,20 +57,21 @@ router.get('/getAllBlogs', async (req, res) => {
 })
 
 // API to create a blog
-router.post('/createBlog', authMiddleware, async (req, res) => {
+router.post('/create-blog', authMiddleware, async (req, res) => {
   let success = false
   if (req.userDetail.role === 'admin') {
     const validate = schema.safeParse(req.body)
     if (validate.success) {
       try {
-        const { title, description, genre, imageUrl } = req.body
+        const { title, genre, content } = req.body
         // const {i}
-        await Blog.create({
-          user: req.userDetail.id,
-          title: title,
-          description: description,
-          genre: genre,
-          imageUrl,
+        await prisma.blog.create({
+          data: {
+            userId: req.userDetail.id,
+            title: title,
+            genre: genre,
+            content,
+          },
         })
         success = true
         return res
@@ -74,9 +99,9 @@ router.post('/createBlog', authMiddleware, async (req, res) => {
 })
 
 // API to get a particular Blog with blog id:
-router.get('/getBlog/:id', async (req, res) => {
+router.get('/get-blog/:id', async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id)
+    const blog = await prisma.blog.findUnique({ where: { id: req.params.id } })
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' })
     }
@@ -87,42 +112,49 @@ router.get('/getBlog/:id', async (req, res) => {
 })
 
 // API to like a paricular blog;
-router.put('/like/:id', authMiddleware, async (req, res) => {
-  const { id } = req.userDetail
-  const blogId = req.params.id
+// router.put('/like/:id', authMiddleware, async (req, res) => {
+//   const { id } = req.userDetail
+//   const blogId = req.params.id
 
-  try {
-    let blog = await Blog.findById(blogId)
-    if (!blog) {
-      return res.status(404).json({ success: false, message: 'Blog not found' })
-    }
-    const alreadyLiked = blog.likes.includes(id)
-    if (alreadyLiked) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'You already liked this blog' })
-    }
-    blog.likes.push(id)
-    await blog.save()
-    return res
-      .status(200)
-      .json({ success: true, message: 'Liked Successfully' })
-  } catch (error) {
-    return res.status(500).json({ success: success, message: error.message })
-  }
-})
+//   try {
+//     let blog = await Blog.findById(blogId)
+//     if (!blog) {
+//       return res.status(404).json({ success: false, message: 'Blog not found' })
+//     }
+//     const alreadyLiked = blog.likes.includes(id)
+//     if (alreadyLiked) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: 'You already liked this blog' })
+//     }
+//     blog.likes.push(id)
+//     await blog.save()
+//     return res
+//       .status(200)
+//       .json({ success: true, message: 'Liked Successfully' })
+//   } catch (error) {
+//     return res.status(500).json({ success: success, message: error.message })
+//   }
+// })
 
 // API to get blogs of any user ;
-router.get('/getUserBlogs', authMiddleware, async (req, res) => {
+router.get('/get-user-blogs', authMiddleware, async (req, res) => {
   let success = false
   try {
-    const { page, limit } = req.query
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
 
-    const blogs = await Blog.find({ user: req.userDetail.id })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+    const count = await prisma.blog.count({
+      where: { userId: req.userDetail.id },
+    })
 
-    const count = await Blog.countDocuments({ user: req.userDetail.id })
+    const blogs = await prisma.blog.findMany({
+      where: { userId: req.userDetail.id },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { date: 'desc' }, // Sorting by newest first
+      include: { user: true }, // Optional: Fetch user details with the blog
+    })
 
     if (blogs.length > 0) {
       success = true
@@ -143,68 +175,64 @@ router.get('/getUserBlogs', authMiddleware, async (req, res) => {
 })
 
 // Api to update the blog
-router.put('/updateBlog/:id', authMiddleware, async (req, res) => {
+router.patch('/update-blog/:id', authMiddleware, async (req, res) => {
   const { id } = req.userDetail
-  const { title, description, imageUrl, genre } = req.body
+  const { title, content, genre } = req.body
   try {
-    const validate = schema.safeParse(req.body)
-    if (!validate.success) {
-      return res.status(405).json({
-        success: false,
-        message:
-          'Please enter a title and description with a minimum of 5 characters each.',
-      })
-    }
-
-    const blog = await Blog.findById(req.params.id)
+    const blog = await prisma.blog.findUnique({ where: { id: req.params.id } })
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' })
     }
-
-    if (blog.user.toString() !== id) {
+    const isAdmin = req.userDetail.role === 'admin'
+    const isOwner = blog.userId === req.userDetail.id
+    if (!isAdmin && !isOwner) {
       return res
         .status(403)
         .json({ success: false, message: 'Not allowed to update' })
     }
 
-    await Blog.findByIdAndUpdate(req.params.id, {
-      title,
-      description,
-      genre,
-      imageUrl,
+    const updatedBlog = await prisma.blog.update({
+      where: { id: req.params.id },
+      data: {
+        title: title ?? blog.title, // Keep existing title if not provided
+        content: content ?? blog.content, // Keep existing content if not provided
+        genre: genre ?? blog.genre, // Keep existing genre if not provided
+      },
     })
-    return res
-      .status(200)
-      .json({ success: true, message: 'Blog updated successfully' })
+    return res.status(200).json({
+      success: true,
+      message: 'Blog updated successfully',
+      blog: updatedBlog,
+    })
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message })
   }
 })
 
 // Api to delete the blog :
-router.delete('/deleteBlog/:id', authMiddleware, async (req, res) => {
+router.delete('/delete-blog/:id', authMiddleware, async (req, res) => {
   let success = false
-  const { id, role } = req.userDetail
+  const { role } = req.userDetail
   try {
+    console.log(req.userDetail)
     if (role !== 'admin') {
       return res
         .status(403)
         .json({ success: false, message: 'Not allowed to delete the Blog' })
     }
-    const blog = await Blog.findById(req.params.id)
-    if (!blog) {
-      return res.status(404).json({ success: false, message: 'Blog not found' })
+    const deletedBlog = await prisma.blog.deleteMany({
+      where: { id: req.params.id, userId: req.userDetail.id },
+    })
+    if (deletedBlog.count === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Blog not found or you are not the owner',
+      })
     }
-    if (blog.user.toString() !== id) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'You are not the owner of this blog' })
-    }
-    await Blog.findByIdAndDelete(req.params.id)
-
-    return res
-      .status(200)
-      .json({ success: true, message: 'Blog deleted successfully' })
+    return res.status(200).json({
+      success: true,
+      message: 'Blog deleted successfully',
+    })
   } catch (error) {
     return res.status(500).json({ success: success, message: error.message })
   }

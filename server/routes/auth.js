@@ -1,6 +1,7 @@
 const express = require('express')
+const prisma = require('../prismaClient')
 const router = express.Router()
-const User = require('../models/User')
+
 const jwt = require('jsonwebtoken')
 const SEC_KEY = process.env.SEC_KEY
 const bcrypt = require('bcrypt')
@@ -25,7 +26,7 @@ router.post('/create-user', async (req, res) => {
     // console.log(validate)
 
     if (validate.success) {
-      const user = await User.findOne({ email: email })
+      const user = await prisma.user.findUnique({ where: { email: email } })
       if (user) {
         res
           .status(409)
@@ -33,22 +34,26 @@ router.post('/create-user', async (req, res) => {
       } else {
         const salt = await bcrypt.genSalt(10)
         const pass = await bcrypt.hash(password, salt)
-        User.create({
-          name: name,
-          password: pass,
-          email: email,
-          role: role,
-          pfp: pfp,
-        }).then((result) => {
-          // console.log(result.id)
-          success = true
-          const token = jwt.sign(
-            { email: email, role: result.role, name: name, id: result.id },
-            SEC_KEY
-          )
+        prisma.user
+          .create({
+            data: {
+              name: name,
+              password: pass,
+              email: email,
+              role: role,
+              profilePhoto: pfp,
+            },
+          })
+          .then((result) => {
+            // console.log(result.id)
+            success = true
+            const token = jwt.sign(
+              { email: email, role: result.role, name: name, id: result.id },
+              SEC_KEY
+            )
 
-          res.status(200).json({ success: success, token: token })
-        })
+            res.status(200).json({ success: success, token: token })
+          })
       }
     } else {
       res.status(422).json({
@@ -68,7 +73,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body
     const validate = schema.safeParse(req.body)
     if (validate.success) {
-      const user = await User.findOne({ email: email })
+      const user = await prisma.user.findUnique({ where: { email: email } })
       if (!user) {
         res.status(404).json({ success: success, message: 'User Not Found' })
       } else {
@@ -97,66 +102,92 @@ router.post('/login', async (req, res) => {
 router.put('/update-user/:id', async (req, res) => {
   const { name, oldPassword, newPassword } = req.body
   let success = false
+
   try {
-    const user = await User.findById(req.params.id)
-    if (user) {
-      if (name) {
-        User.findByIdAndUpdate(req.params.id, { name: name }).then((result) => {
-          success = true
-          const token = jwt.sign(
-            {
-              name: name,
-              email: result.email,
-              role: result.role,
-              id: result.id,
-            },
-            SEC_KEY
-          )
-          res.status(200).json({
-            success: success,
-            token: token,
-            message: 'Name updated successfully',
-          })
-        })
-      } else {
-        // console.log(oldPassword)
-        const comparePass = await bcrypt.compare(oldPassword, user.password)
-        const salt = await bcrypt.genSalt(10)
-        const pass = await bcrypt.hash(newPassword, salt)
-        if (comparePass) {
-          User.findByIdAndUpdate(req.params.id, { password: pass }).then(
-            (result) => {
-              success = true
-              const token = jwt.sign(
-                {
-                  name: name,
-                  email: result.email,
-                  role: result.role,
-                  id: result.id,
-                },
-                SEC_KEY
-              )
-              res.status(200).json({
-                success: success,
-                token: token,
-                message: 'Password updated successfully',
-              })
-            }
-          )
-        }
-      }
-    } else {
-      res.status(404).json({ success: success, message: 'user not found' })
+    // Find user by ID
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id },
+    })
+
+    if (!user) {
+      return res.status(404).json({ success, message: 'User not found' })
     }
+
+    // If updating the name
+    if (name) {
+      const updatedUser = await prisma.user.update({
+        where: { id: req.params.id },
+        data: { name },
+      })
+
+      // Generate new token with updated name
+      const token = jwt.sign(
+        {
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          id: updatedUser.id,
+        },
+        SEC_KEY
+      )
+
+      return res.status(200).json({
+        success: true,
+        token,
+        message: 'Name updated successfully',
+      })
+    }
+
+    // If updating the password
+    if (oldPassword && newPassword) {
+      const isMatch = await bcrypt.compare(oldPassword, user.password)
+      if (!isMatch) {
+        return res
+          .status(400)
+          .json({ success, message: 'Incorrect old password' })
+      }
+
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+      const updatedUser = await prisma.user.update({
+        where: { id: req.params.id },
+        data: { password: hashedPassword },
+      })
+
+      // Generate new token after password update
+      const token = jwt.sign(
+        {
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          id: updatedUser.id,
+        },
+        SEC_KEY
+      )
+
+      return res.status(200).json({
+        success: true,
+        token,
+        message: 'Password updated successfully',
+      })
+    }
+
+    return res
+      .status(400)
+      .json({ success, message: 'No valid update fields provided' })
   } catch (error) {
-    res.status(500).json({ success: success, message: error.message })
+    console.error(error)
+    return res.status(500).json({ success, message: error.message })
   }
 })
 
-router.get('/getUser/:id', async (req, res) => {
+router.get('/get-user/:id', async (req, res) => {
   let success = false
   try {
-    const user = await User.findById(req.params.id)
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id },
+    })
     if (!user) {
       return res
         .status(404)
@@ -170,7 +201,7 @@ router.get('/getUser/:id', async (req, res) => {
 })
 
 // Api to check user after logging in based on auth token
-router.get('/checkUser', authMiddleware, (req, res) => {
+router.get('/check-user', authMiddleware, (req, res) => {
   return res.status(200).json({ success: true, role: req.userDetail.role })
 })
 

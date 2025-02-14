@@ -10,7 +10,7 @@ export const useCheckAdmin = (url) => {
   const [loading, setLoading] = useState(true)
   const checkRole = async () => {
     try {
-      const response = await axios.get(`${url}/checkUser`, {
+      const response = await axios.get(`${url}/check-user`, {
         headers: { token: localStorage.getItem('token') },
       })
       const { data } = response
