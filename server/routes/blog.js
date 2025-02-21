@@ -17,6 +17,9 @@ const schema = zod.object({
   genre: zod.string().min(3),
 })
 
+const selectUserData = {
+  user: { select: { email: true, name: true, id: true, profilePhoto: true } },
+}
 //  API to get all blogs
 router.get('/get-all-blogs', async (req, res) => {
   try {
@@ -24,7 +27,7 @@ router.get('/get-all-blogs', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10
     const genre = req.query.genre || ''
     const searchQuery = req.query.query || null
-
+    console.log(selectUserData)
     const where = {
       ...(genre && { genre }),
       ...(searchQuery && {
@@ -33,11 +36,11 @@ router.get('/get-all-blogs', async (req, res) => {
     }
     const blogsCount = await prisma.blog.count({ where })
     const blogs = await prisma.blog.findMany({
-      where,
+      where: where,
+      include: selectUserData,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { date: 'desc' }, // Sorting by newest first
-      include: { user: true }, // Optional: Fetch user details with the blog
     })
     if (!blogs.length) {
       return res.status(404).json({ success: false, message: 'No blogs found' })
@@ -101,7 +104,10 @@ router.post('/create-blog', authMiddleware, async (req, res) => {
 // API to get a particular Blog with blog id:
 router.get('/get-blog/:id', async (req, res) => {
   try {
-    const blog = await prisma.blog.findUnique({ where: { id: req.params.id } })
+    const blog = await prisma.blog.findUnique({
+      where: { id: req.params.id },
+      include: selectUserData,
+    })
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' })
     }
@@ -153,7 +159,7 @@ router.get('/get-user-blogs', authMiddleware, async (req, res) => {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { date: 'desc' }, // Sorting by newest first
-      include: { user: true }, // Optional: Fetch user details with the blog
+      include: selectUserData,
     })
 
     if (blogs.length > 0) {

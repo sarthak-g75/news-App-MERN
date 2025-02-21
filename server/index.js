@@ -1,14 +1,6 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-// const dotenv = require('dotenv')
-// const { PrismaClient } = require('@prisma/client')
-
-// Load environment variables
-// dotenv.config()
-
-// Initialize Prisma Client
-// const prisma = new PrismaClient()
 
 const app = express()
 

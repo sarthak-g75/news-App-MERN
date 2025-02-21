@@ -99,14 +99,15 @@ router.post('/login', async (req, res) => {
 })
 
 // Route to update details
-router.put('/update-user/:id', async (req, res) => {
+router.put('/update-user', authMiddleware, async (req, res) => {
   const { name, oldPassword, newPassword } = req.body
   let success = false
 
   try {
+    // console.log(req.userDetail)
     // Find user by ID
     const user = await prisma.user.findUnique({
-      where: { id: req.params.id },
+      where: { id: req.userDetail.id },
     })
 
     if (!user) {
@@ -116,7 +117,7 @@ router.put('/update-user/:id', async (req, res) => {
     // If updating the name
     if (name) {
       const updatedUser = await prisma.user.update({
-        where: { id: req.params.id },
+        where: { id: req.userDetail.id },
         data: { name },
       })
 
@@ -151,7 +152,7 @@ router.put('/update-user/:id', async (req, res) => {
       const hashedPassword = await bcrypt.hash(newPassword, salt)
 
       const updatedUser = await prisma.user.update({
-        where: { id: req.params.id },
+        where: { id: req.userDetail.id },
         data: { password: hashedPassword },
       })
 

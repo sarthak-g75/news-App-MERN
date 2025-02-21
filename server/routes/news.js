@@ -19,6 +19,10 @@ const schema = zod.object({
   genre: zod.string().min(3),
 })
 
+const selectUserData = {
+  user: { select: { email: true, name: true, id: true, profilePhoto: true } },
+}
+
 // Api to create News - login required;
 router.post('/create-news', authMiddleware, async (req, res) => {
   try {
@@ -124,7 +128,10 @@ router.patch('/update-news/:id', authMiddleware, async (req, res) => {
 // Api to get a news by id
 router.get('/get-news/:id', async (req, res) => {
   try {
-    const news = await prisma.news.findUnique({ where: { id: req.params.id } })
+    const news = await prisma.news.findUnique({
+      where: { id: req.params.id },
+      include: selectUserData,
+    })
     if (!news) {
       return res.status(404).json({ success: false, message: 'News not found' })
     }
@@ -148,6 +155,7 @@ router.get('/get-user-news', authMiddleware, async (req, res) => {
 
     const news = await prisma.news.findMany({
       where: { userId: req.userDetail.id },
+      include: selectUserData,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { date: 'desc' }, // Sorting by latest news
@@ -190,6 +198,7 @@ router.get('/get-news', async (req, res) => {
 
     const news = await prisma.news.findMany({
       where,
+      include: selectUserData,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { date: 'desc' }, // Sorting by newest first
@@ -210,5 +219,4 @@ router.get('/get-news', async (req, res) => {
     return res.status(500).json({ success: false, message: error.message })
   }
 })
-
 module.exports = router

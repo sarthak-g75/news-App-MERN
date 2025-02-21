@@ -9,12 +9,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(uuid())
   name         String
   email        String    @unique
   password     String
@@ -27,8 +27,8 @@ model User {
 }
 
 model Blog {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId  String   @unique @db.ObjectId
+  id      String   @id @default(uuid())
+  userId  String
   title   String
   content Json // Flexible structure for title, images, videos, etc.
   date    DateTime @default(now())
@@ -39,8 +39,8 @@ model Blog {
 }
 
 model News {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId  String   @unique @db.ObjectId
+  id      String   @id @default(uuid())
+  userId  String
   title   String
   content Json // Flexible structure for title, images, videos, etc.
   date    DateTime @default(now())
