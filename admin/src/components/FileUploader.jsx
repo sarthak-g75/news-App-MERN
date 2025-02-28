@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3'
 
 const s3Client = new S3Client({
   region: 'ap-south-1',
@@ -10,20 +14,36 @@ const s3Client = new S3Client({
   },
 })
 
-function FileUploader({ onFileChange, reset }) {
+const deleteImage = async (fileUrl) => {
+  const fileKey = fileUrl.split('/').pop()
+  // console.log(fileKey.slice(-2).join('/'))
+  await s3Client.send(
+    new DeleteObjectCommand({
+      Bucket: import.meta.env.VITE_AWS_BUCKET_NAME,
+      Key: `uploads/${fileKey}`,
+    })
+  )
+  alert('Image deleted successfully')
+}
+function FileUploader({ onFileChange, reset, preview }) {
   const [files, setFiles] = useState([])
-  const [previewUrls, setPreviewUrls] = useState([])
+  const [previewUrls, setPreviewUrls] = useState(preview.content || [])
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-
   useEffect(() => {
-    if (reset) {
-      setFiles([])
-      setPreviewUrls([])
-      setSubmitting(false)
-      setSubmitted(false)
+    if (preview.content) {
+      setPreviewUrls(preview.content)
     }
-  }, [reset])
+  }, [preview])
+
+  // useEffect(() => {
+  //   if (reset) {
+  //     setFiles([])
+  //     setPreviewUrls([])
+  //     setSubmitting(false)
+  //     setSubmitted(false)
+  //   }
+  // }, [reset])
 
   const handleFileChange = (e) => {
     const filesArray = Array.from(e.target.files)
@@ -33,15 +53,26 @@ function FileUploader({ onFileChange, reset }) {
     setPreviewUrls((prevUrls) => [...prevUrls, ...urls])
   }
 
-  const handleDelete = (index) => {
-    const newFiles = [...files]
-    const newPreviewUrls = [...previewUrls]
+  const handleDelete = (index, url) => {
+    if (files.length > 1) {
+      const newFiles = [...files]
+      const newPreviewUrls = [...previewUrls]
 
-    newFiles.splice(index, 1)
-    newPreviewUrls.splice(index, 1)
+      newFiles.splice(index, 1)
+      newPreviewUrls.splice(index, 1)
 
-    setFiles(newFiles)
-    setPreviewUrls(newPreviewUrls)
+      setFiles(newFiles)
+      setPreviewUrls(newPreviewUrls)
+      deleteImage(url)
+    } else {
+      const newPreviewUrls = [...previewUrls]
+      newPreviewUrls.splice(index, 1)
+      setPreviewUrls(newPreviewUrls)
+
+      // console.log(newPreviewUrls)
+      onFileChange(newPreviewUrls)
+      deleteImage(url)
+    }
   }
 
   const getFileBuffer = (file) => {
@@ -79,8 +110,9 @@ function FileUploader({ onFileChange, reset }) {
       setSubmitting(false)
       setSubmitted(true)
       setFiles([])
-      setPreviewUrls([])
-      setTimeout(() => setSubmitted(false), 1000)
+      setPreviewUrls(urls)
+      console.log(urls)
+      setSubmitted(false)
     } catch (error) {
       console.error('Error uploading file:', error)
     }
@@ -96,6 +128,7 @@ function FileUploader({ onFileChange, reset }) {
           multiple
         />
         <button
+          type='button'
           className={`px-2 py-1 font-semibold bg-gray-200 rounded-lg ${
             submitted ? 'cursor-not-allowed' : ''
           }`}
@@ -116,7 +149,8 @@ function FileUploader({ onFileChange, reset }) {
               key={index}
               className='relative flex-shrink-0 w-96 h-96'
             >
-              {files[index].type.startsWith('image/') ? (
+              {(files[index] && files[index].type.startsWith('image/')) ||
+              url.match(/\.(jpeg|jpg|gif|png)$/i) ? (
                 <img
                   src={url}
                   className='object-cover w-full h-full'
@@ -130,7 +164,7 @@ function FileUploader({ onFileChange, reset }) {
                 />
               )}
               <button
-                onClick={() => handleDelete(index)}
+                onClick={() => handleDelete(index, url)}
                 className='absolute px-2 py-1 text-white bg-red-500 rounded-full top-2 left-2'
               >
                 Delete

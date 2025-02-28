@@ -6,8 +6,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 const EditBlog = () => {
   const mainUrl = import.meta.env.VITE_URL
 
-  const fetchUrl = `${mainUrl}/blog/getBlog` // Adjust API endpoint as per your backend
-  const updateUrl = `${mainUrl}/blog/updateBlog` // Adjust API endpoint as per your backend
+  const fetchUrl = `${mainUrl}/blog/get-blog` // Adjust API endpoint as per your backend
+  const updateUrl = `${mainUrl}/blog/update-blog` // Adjust API endpoint as per your backend
   const { id } = useParams()
   const navigate = useNavigate()
   const [initialValues, setInitialValues] = useState({
@@ -39,7 +39,7 @@ const EditBlog = () => {
 
   const handleUpdate = async (updatedData) => {
     try {
-      const response = await axios.put(`${updateUrl}/${id}`, updatedData, {
+      const response = await axios.patch(`${updateUrl}/${id}`, updatedData, {
         headers: { token: localStorage.getItem('token') },
       })
       if (response.data.success) {
@@ -54,11 +54,11 @@ const EditBlog = () => {
   const formFields = [
     { label: 'Enter The Title', name: 'title', placeholder: 'Title Here' },
     { label: 'Enter The Genre', name: 'genre', placeholder: 'Genre Here' },
-    {
-      label: 'Enter The Description',
-      name: 'description',
-      placeholder: 'Description Here',
-    },
+    // {
+    //   label: 'Enter The Description',
+    //   name: 'description',
+    //   placeholder: 'Description Here',
+    // },
 
     // Add more fields as per your blog schema
   ]

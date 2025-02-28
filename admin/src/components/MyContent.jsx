@@ -8,7 +8,32 @@ import { ref, deleteObject } from 'firebase/storage'
 import { adminAuth } from '../recoil/atoms/authAtom'
 import axios from 'axios'
 import DataTable from '../components/DataTable'
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3'
 
+const s3Client = new S3Client({
+  region: 'ap-south-1',
+  credentials: {
+    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY,
+    secretAccessKey: import.meta.env.VITE_AWS_SECRET_KEY,
+  },
+})
+
+const deleteImage = async (fileUrl) => {
+  console.log(fileUrl)
+  const fileKey = fileUrl.split('/').pop()
+  // console.log(fileKey.slice(-2).join('/'))
+  await s3Client.send(
+    new DeleteObjectCommand({
+      Bucket: import.meta.env.VITE_AWS_BUCKET_NAME,
+      Key: `uploads/${fileKey}`,
+    })
+  )
+  alert('Image deleted successfully')
+}
 const MyContent = ({ dataUrl, deleteUrl, fetchUrl, name }) => {
   const auth = useRecoilValue(adminAuth)
   const navigate = useNavigate()
@@ -47,32 +72,17 @@ const MyContent = ({ dataUrl, deleteUrl, fetchUrl, name }) => {
     navigate(`/edit-${name}/${itemId}`)
   }
 
-  const deleteImages = async (imageUrl) => {
-    if (imageUrl.length === 0) {
-      console.warn('No images found')
-    } else {
-      for (const url of imageUrl) {
-        try {
-          const pathStartIndex = url.indexOf('/o/') + 3
-          const pathEndIndex = url.indexOf('?alt=media')
-          const encodedPath = url.substring(pathStartIndex, pathEndIndex)
-          const filePath = decodeURIComponent(encodedPath)
-
-          const imageRef = ref(imageDB, filePath)
-
-          await deleteObject(imageRef)
-          console.log(`Deleted: ${filePath}`)
-        } catch (error) {
-          console.error(`Error deleting file at ${url}:`, error)
-        }
-      }
-    }
-  }
-
-  const handleDelete = async (itemId, imageUrl) => {
+  const handleDelete = async (itemId, content) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await deleteImages(imageUrl)
+        content.map((item) => {
+          if (item.type === 'image') {
+            item.content.map((url) => {
+              console.log(url)
+              deleteImage(url)
+            })
+          }
+        })
         const response = await axios.delete(`${deleteUrl}/${itemId}`, {
           headers: { token: localStorage.getItem('token') },
         })

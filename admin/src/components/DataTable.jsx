@@ -20,7 +20,7 @@ const DataTable = ({
         <table className='w-full min-w-full bg-white'>
           <thead>
             <tr>
-              <th className='px-4 py-2 text-left border-b'>Image</th>
+              {/* <th className='px-4 py-2 text-left border-b'>Image</th> */}
               <th className='px-4 py-2 text-left border-b'>Title</th>
               <th className='px-4 py-2 text-left border-b'>Author</th>
               <th className='px-4 py-2 text-left border-b'>Actions</th>
@@ -52,7 +52,7 @@ const DataTable = ({
                   <button
                     className='px-2 py-1 text-white bg-red-500 rounded'
                     onClick={() =>
-                      handleDelete(item.data.id, item.data.imageUrl)
+                      handleDelete(item.data.id, item.data.content)
                     }
                   >
                     Delete

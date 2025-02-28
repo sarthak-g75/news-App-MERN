@@ -5,8 +5,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 
 const EditNews = () => {
   const mainUrl = import.meta.env.VITE_URL
-  const fetchUrl = `${mainUrl}/news/getNews`
-  const updateUrl = `${mainUrl}/news/updateNews`
+  const fetchUrl = `${mainUrl}/news/get-news`
+  const updateUrl = `${mainUrl}/news/update-news`
 
   const { id } = useParams()
   const navigate = useNavigate()
@@ -26,6 +26,7 @@ const EditNews = () => {
         if (response.data.success) {
           // console.log(response.data.data)
           setInitialValues(response.data.data)
+          console.log(response.data.data)
         } else {
           alert(response.data.message)
           navigate('/login')
@@ -39,7 +40,7 @@ const EditNews = () => {
 
   const handleUpdate = async (updatedData) => {
     try {
-      const response = await axios.put(`${updateUrl}/${id}`, updatedData, {
+      const response = await axios.patch(`${updateUrl}/${id}`, updatedData, {
         headers: { token: localStorage.getItem('token') },
       })
       if (response.data.success) {
@@ -54,7 +55,6 @@ const EditNews = () => {
   const formFields = [
     { label: 'Enter The Title', name: 'title', placeholder: 'Title Here' },
     { label: 'Enter The Genre', name: 'genre', placeholder: 'Genre Here' },
-    { label: 'Enter The News', name: 'news', placeholder: 'News Here' },
   ]
 
   return (

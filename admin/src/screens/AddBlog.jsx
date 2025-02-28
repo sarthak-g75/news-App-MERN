@@ -10,7 +10,7 @@ const AddBlog = () => {
   const mainUrl = import.meta.env.VITE_URL
 
   const url = `${mainUrl}/auth`
-  const submitUrl = `${mainUrl}/blog/createBlog`
+  const submitUrl = `${mainUrl}/blog/create-blog`
   const auth = useRecoilValue(adminAuth)
   const navigate = useNavigate()
   const { role, loading } = useCheckAdmin(url)
@@ -18,11 +18,6 @@ const AddBlog = () => {
   const formFields = [
     { label: 'Enter The Title', name: 'title', placeholder: 'Title Here' },
     { label: 'Enter The Genre', name: 'genre', placeholder: 'Genre Here' },
-    {
-      label: 'Enter The Description',
-      name: 'description',
-      placeholder: 'Description Here',
-    },
   ]
 
   useEffect(() => {

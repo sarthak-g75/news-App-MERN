@@ -9,15 +9,24 @@ const AddNews = () => {
   const mainUrl = import.meta.env.VITE_URL
 
   const url = `${mainUrl}/auth`
-  const submitUrl = `${mainUrl}/news/createNews`
+  const submitUrl = `${mainUrl}/news/create-news`
   const auth = useRecoilValue(adminAuth)
   const navigate = useNavigate()
   const { role, loading } = useCheckAdmin(url)
 
   const formFields = [
-    { label: 'Enter The Title', name: 'title', placeholder: 'Title Here' },
-    { label: 'Enter The Genre', name: 'genre', placeholder: 'Genre Here' },
-    { label: 'Enter The News', name: 'news', placeholder: 'News Here' },
+    {
+      label: 'Title',
+      name: 'title',
+      type: 'text',
+      placeholder: 'Enter Title Here',
+    },
+    {
+      label: 'Genre',
+      name: 'genre',
+      type: 'text',
+      placeholder: 'Enter Genre Here',
+    },
   ]
 
   useEffect(() => {
